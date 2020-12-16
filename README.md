@@ -6,3 +6,7 @@
 
 python app.py -i <path-to-image>
 ```
+
+### Kết quả chạy thử
+
+![](result.png)
