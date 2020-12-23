@@ -1,4 +1,4 @@
-# import the necessary packages
+# import the necessary packagesgit
 from PIL import Image
 import pytesseract
 import argparse
@@ -16,12 +16,14 @@ img_path = "demo.png"
         blur : Làm mờ ảnh để giảm noise
         thresh: Phân tách đen trắng
 '''
+
 # ap = argparse.ArgumentParser()
 # ap.add_argument("-i", "--image", required=True,
 #     help="Đường dẫn đến ảnh muốn nhận dạng")
 # ap.add_argument("-p", "--preprocess", type=str, default="thresh",
 #     help="Bước tiền xử lý ảnh")
 # args = vars(ap.parse_args())
+
 
 # Đọc file ảnh và chuyển về ảnh xám
 # image = cv2.imread(args["image"])
@@ -30,6 +32,7 @@ gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
 # Check xem có sử dụng tiền xử lý ảnh không
 # Nếu phân tách đen trắng
+
 # if args["preprocess"] == "thresh":
 #     gray = cv2.threshold(gray, 0, 255,
 #         cv2.THRESH_BINARY | cv2.THRESH_OTSU)[1]
@@ -38,13 +41,15 @@ gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 # elif args["preprocess"] == "blur":
 #     gray = cv2.medianBlur(gray, 3)
  
+
 # Ghi tạm ảnh xuống ổ cứng để sau đó apply OCR
 # filename = "{}.png".format(os.getpid())
 filename = "out.png"
 cv2.imwrite(filename, gray)
 
 # Load ảnh và apply nhận dạng bằng Tesseract OCR
-text = pytesseract.image_to_string(Image.open(filename),lang='vie')
+pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+text = pytesseract.image_to_string(Image.open(filename), lang='vie')
 
 # Xóa ảnh tạm sau khi nhận dạng
 os.remove(filename)
