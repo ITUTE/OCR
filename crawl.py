@@ -24,13 +24,13 @@ def crawlNewsData():
         except Exception as e:
             logging.exception(e)
             content = ""
-        image = body.find("img").attrs["src"]
+        # image = body.find("img").attrs["src"]
 
         data.append({
             "title": title,
             "abstract": abstract,
             "content": content,
-            "image": image,
+            # "image": image,
         })
     return data
 
@@ -58,20 +58,22 @@ def writeToImage(image, text, position, font, color, maxLine):
 def makeFastNews(data):
     for index, item in enumerate(data):
         # make new image and tool to draw
-        image = Image.new('RGB', (650, 750), color="white")
+        image = Image.new('RGB', (650, 450), color="white")
         pen = ImageDraw.Draw(image)
         # load image from internet => resize => paste to main image
+        '''
         pen.rectangle(((0, 0), (650, 300)), fill="grey")
         newsImage = Image.open(requests.get(item["image"], stream=True).raw)
         newsImage.thumbnail((650, 300), Image.ANTIALIAS)
         image.paste(newsImage, (650 // 2 - newsImage.width // 2, 300 // 2 - newsImage.height // 2))
+        '''
         # write title
         titleFont = ImageFont.truetype("font/arial.ttf", 22)
-        writeToImage(image, item["title"], (10, 310), titleFont, "black", 3)
+        writeToImage(image, item["title"], (10, 10), titleFont, "black", 3)
         abstractFont = ImageFont.truetype("font/arial.ttf", 15)
-        writeToImage(image, item["abstract"], (10, 390), abstractFont, "gray", 4)
+        writeToImage(image, item["abstract"], (10, 90), abstractFont, "gray", 4)
         contentFont = ImageFont.truetype("font/arial.ttf", 20)
-        writeToImage(image, item["content"], (10, 460), contentFont, "black", 11)
+        writeToImage(image, item["content"], (10, 160), contentFont, "black", 11)
         name = "news-" + str(index) + ".png"
         image.save("news/" + name)
         print("saved to " + "news/" + name)

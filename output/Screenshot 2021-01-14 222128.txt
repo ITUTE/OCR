@@ -1,0 +1,10 @@
+Đối với các ảnh chụp tài liệu giấy tiếng Việt, ứng dụng nhận diện còn nhiều sai
+
+sót. Sai các đầu thanh ở các từ, các câu nhận diện được không được sắp xếp theo
+đúng thứ tự mà còn lộn xôn, có nhiễu từ không nhận diện được.
+
+Đối với các ảnh chụp màn hình các bài viết tiếng Việt, ứng dụng phát huy hiệu
+quả cao hơn|
+
+  
+
