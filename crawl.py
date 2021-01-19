@@ -16,13 +16,15 @@ def crawlNewsData():
         news = requests.get("https://tuoitre.vn" + link)
         soup = BeautifulSoup(news.content, "html.parser")
 
-        title = soup.find("h1", class_="article-title").text
-        abstract = soup.find("h2", class_="sapo").text
-        body = soup.find("div", id="main-detail-body")
         try:
+            title = soup.find("h1", class_="article-title").text
+            abstract = soup.find("h2", class_="sapo").text
+            body = soup.find("div", id="main-detail-body")
             content = body.findChildren("p", recursive=False)[0].text + body.findChildren("p", recursive=False)[1].text
         except Exception as e:
             logging.exception(e)
+            title = "Không thể lấy thông tin!"
+            abstract = ""
             content = ""
         # image = body.find("img").attrs["src"]
 

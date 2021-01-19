@@ -1,13 +1,21 @@
+import logging
+import os
+import time
+
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QFileDialog
 
-from scan import ScanImage
+from scan import scan
 
 
 class UiScanform(object):
     def __init__(self):
-        self.outputFolder = ""
         self.inputFolder = ""
+        self.outputFolder = ""
+        self.numberOfImages = 0
+        self.scannedImages = 0
+        self.progress = ""
+        self.done = False
 
     def setupUi(self, frmScan):
         frmScan.setObjectName("frmScan")
@@ -33,7 +41,7 @@ class UiScanform(object):
         self.label.setGeometry(QtCore.QRect(140, 30, 941, 61))
         font = QtGui.QFont()
         font.setFamily("Tahoma")
-        font.setPointSize(18)
+        font.setPointSize(20)
         font.setBold(True)
         font.setWeight(75)
         self.label.setFont(font)
@@ -81,12 +89,20 @@ class UiScanform(object):
         self.lblOutput.setObjectName("lblOutput")
 
         self.lblLinkInput = QtWidgets.QLabel(self.centralwidget)
-        self.lblLinkInput.setGeometry(QtCore.QRect(100, 80, 200, 16))
+        self.lblLinkInput.setGeometry(QtCore.QRect(100, 80, 300, 16))
         self.lblLinkInput.setObjectName("lblLinkInput")
 
         self.lblLinkOutput = QtWidgets.QLabel(self.centralwidget)
-        self.lblLinkOutput.setGeometry(QtCore.QRect(100, 150, 200, 16))
+        self.lblLinkOutput.setGeometry(QtCore.QRect(100, 150, 300, 16))
         self.lblLinkOutput.setObjectName("lblLinkOutput")
+
+        self.lblProgress = QtWidgets.QLabel(self.centralwidget)
+        self.lblProgress.setGeometry(QtCore.QRect(30, 200, 300, 16))
+        self.lblProgress.setObjectName("lblProgress")
+
+        self.lblEllipsis = QtWidgets.QLabel(self.centralwidget)
+        self.lblEllipsis.setGeometry(QtCore.QRect(100, 200, 300, 16))
+        self.lblEllipsis.setObjectName("lblEllipsis")
 
         frmScan.setCentralWidget(self.centralwidget)
 
@@ -108,27 +124,75 @@ class UiScanform(object):
         self.btnStart.clicked.connect(self.scan)
 
     def loadInputFolder(self):
-        self.inputFolder = QFileDialog.getExistingDirectory(None, 'Select a folder:', 'C:\\', QFileDialog.ShowDirsOnly)
+        if self.outputFolder == "":
+            defaultPath = 'C:/'
+        else:
+            defaultPath = self.outputFolder
+        self.inputFolder = QFileDialog.getExistingDirectory(None, 'Select a folder:', defaultPath,
+                                                            QFileDialog.ShowDirsOnly)
         if self.inputFolder != "":
             self.lblLinkInput.setText(self.inputFolder)
             if self.outputFolder != "":
                 self.btnStart.setEnabled(True)
 
     def loadOutputFolder(self):
-        self.outputFolder = QFileDialog.getExistingDirectory(None, 'Select a folder:', 'C:\\', QFileDialog.ShowDirsOnly)
+        if self.inputFolder == "":
+            defaultPath = 'C:/'
+        else:
+            defaultPath = self.inputFolder
+        self.outputFolder = QFileDialog.getExistingDirectory(None, 'Select a folder:', defaultPath,
+                                                             QFileDialog.ShowDirsOnly)
         if self.outputFolder != "":
             self.lblLinkOutput.setText(self.outputFolder)
             if self.inputFolder != "":
                 self.btnStart.setEnabled(True)
 
     def scan(self):
-        scanImage = ScanImage(self.inputFolder, self.outputFolder)
-        scanImage.scan()
+        images = os.listdir(self.inputFolder)
+        filenames = [(filename.split("."))[0] for filename in images]
+        self.numberOfImages = len(filenames)
+        dot = "."
+        self.progress = "Progress: " + str(self.scannedImages) + "/" + str(self.numberOfImages)
+        self.lblProgress.setText(self.progress)
+        self.scanLoop(images, filenames)
+
+        '''
+        thread1 = threading.Thread(target=self.scanLoop(images, filenames))
+        thread1.start()
+        thread2 = threading.Thread(target=self.waitingLoop(dot))
+        thread2.start()
+        '''
+
+    def scanLoop(self, images, filenames):
+        for i, image in enumerate(images):
+            try:
+
+                scan(self.inputFolder, self.outputFolder, filenames, i, image)
+                self.scannedImages += 1
+                self.progress = "Progress: " + str(self.scannedImages) + "/" + str(self.numberOfImages)
+                self.lblProgress.setText(self.progress)
+            except Exception as e:
+                logging.exception(e)
+
+        self.done = True
+
         msg = QtWidgets.QMessageBox()
-        msg.setIcon(QtWidgets.QMessageBox.Information)
-        msg.setText("All images are scanned successfully!")
+        if self.scannedImages == self.numberOfImages:
+            msg.setIcon(QtWidgets.QMessageBox.Information)
+            msg.setText("All images are scanned successfully!")
+        else:
+            msg.setIcon(QtWidgets.QMessageBox.Warning)
+            msg.setText("Cannot scan all images in your chosen folder!")
         msg.setWindowTitle("Message")
         msg.exec_()
+
+    def waitingLoop(self, dot):
+        while not self.done:
+            dot += "."
+            if len(dot) == 6:
+                dot = "."
+            self.lblEllipsis.setText(dot)
+            time.sleep(1)
 
     def retranslateUi(self, frmScan):
         _translate = QtCore.QCoreApplication.translate
@@ -141,6 +205,8 @@ class UiScanform(object):
         self.lblOutput.setText(_translate("frmScan", "Output Link:"))
         self.lblLinkInput.setText(_translate("frmScan", "Choose Input Folder!"))
         self.lblLinkOutput.setText(_translate("frmScan", "Choose Output Folder!"))
+        self.lblProgress.setText("")
+        self.lblEllipsis.setText("")
 
 
 if __name__ == "__main__":
